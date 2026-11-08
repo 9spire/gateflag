@@ -1,0 +1,104 @@
+{
+  "seedVersion": 1,
+  "users": [
+    { "email": "alex@example.com", "role": "developer" },
+    { "email": "dana@example.com", "role": "developer" },
+    { "email": "pat@example.com", "role": "access" },
+    { "email": "jordan@example.com", "role": "none" },
+    { "email": "sam@example.com", "role": "none" }
+  ],
+  "groups": [
+    {
+      "key": "beta-testers",
+      "description": "External beta program",
+      "defaultTtlDays": 30
+    },
+    {
+      "key": "support-team",
+      "description": "Customer support staff",
+      "defaultTtlDays": null
+    }
+  ],
+  "memberships": [
+    {
+      "email": "pat@example.com",
+      "groupKey": "beta-testers",
+      "expiresInDays": 30
+    },
+    {
+      "email": "jordan@example.com",
+      "groupKey": "support-team",
+      "expiresInDays": null
+    }
+  ],
+  "flags": [
+    {
+      "key": "NEW_CHECKOUT_FLOW",
+      "description": "Redesigned one-page checkout",
+      "universalState": "GATED",
+      "accessClients": ["storefront", "checkout"]
+    },
+    {
+      "key": "PRODUCT_RECOMMENDATIONS",
+      "description": "Personalized product carousel",
+      "universalState": "GATED",
+      "accessClients": ["storefront"]
+    },
+    {
+      "key": "BETA_SEARCH",
+      "description": "Semantic search box",
+      "universalState": "GATED",
+      "accessClients": ["storefront", "support-portal"]
+    },
+    {
+      "key": "ORDER_HISTORY_V2",
+      "description": "New order history with tracking",
+      "universalState": "GATED",
+      "accessClients": ["storefront", "support-portal"]
+    },
+    {
+      "key": "DARK_MODE",
+      "description": "Dark theme toggle",
+      "universalState": "RELEASED",
+      "accessClients": ["storefront", "checkout", "support-portal"]
+    },
+    {
+      "key": "BULK_EXPORT",
+      "description": "CSV export of orders (paused)",
+      "universalState": "DISABLED",
+      "accessClients": ["support-portal"]
+    }
+  ],
+  "roleGrants": [{ "flagKey": "PRODUCT_RECOMMENDATIONS", "role": "access" }],
+  "groupGrants": [
+    {
+      "flagKey": "NEW_CHECKOUT_FLOW",
+      "groupKey": "beta-testers",
+      "expiresInDays": null
+    },
+    {
+      "flagKey": "ORDER_HISTORY_V2",
+      "groupKey": "support-team",
+      "expiresInDays": null
+    },
+    {
+      "flagKey": "BULK_EXPORT",
+      "groupKey": "support-team",
+      "expiresInDays": null
+    }
+  ],
+  "userGrants": [
+    {
+      "flagKey": "ORDER_HISTORY_V2",
+      "email": "pat@example.com",
+      "expiresInDays": 7
+    }
+  ],
+  "developerDenies": [
+    {
+      "flagKey": "BETA_SEARCH",
+      "email": "dana@example.com",
+      "createdBy": "alex@example.com"
+    }
+  ]
+}

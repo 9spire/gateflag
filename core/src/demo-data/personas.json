@@ -1,0 +1,40 @@
+{
+  "adminIdpGroup": "gateflag-admins",
+  "personas": [
+    {
+      "id": "alex-admin",
+      "displayName": "Alex",
+      "email": "alex@example.com",
+      "idpGroups": ["gateflag-admins"],
+      "blurb": "Admin and developer. Can open the admin console."
+    },
+    {
+      "id": "dana-dev",
+      "displayName": "Dana",
+      "email": "dana@example.com",
+      "idpGroups": [],
+      "blurb": "Developer. Gets every GATED flag automatically, except BETA_SEARCH, which an admin switched off."
+    },
+    {
+      "id": "pat-beta",
+      "displayName": "Pat",
+      "email": "pat@example.com",
+      "idpGroups": [],
+      "blurb": "Beta tester with the access role, in the beta-testers group."
+    },
+    {
+      "id": "jordan-support",
+      "displayName": "Jordan",
+      "email": "jordan@example.com",
+      "idpGroups": [],
+      "blurb": "Support agent in the support-team group."
+    },
+    {
+      "id": "sam-none",
+      "displayName": "Sam",
+      "email": "sam@example.com",
+      "idpGroups": [],
+      "blurb": "No special access. Sees only RELEASED features."
+    }
+  ]
+}
