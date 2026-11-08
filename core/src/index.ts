@@ -2,5 +2,9 @@
 export const CORE_PACKAGE = '@gateflag/core' as const;
 
 export * from './domain/index.js';
+export * from './repository/index.js';
+export * from './identity/index.js';
+export * from './services/index.js';
+export * from './http/index.js';
 export { loadSeed, loadPersonas } from './demo-data/loadSeed.js';
 export type { Persona, PersonasFile } from './demo-data/loadSeed.js';
