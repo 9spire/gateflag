@@ -5,10 +5,29 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc -b",
-    "test": "vitest run --passWithNoTests",
-    "build": "tsc -b"
+    "test": "vitest run",
+    "build": "tsc -b",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "setup-and-seed": "tsx src/scripts/setup-and-seed.ts"
   },
   "dependencies": {
-    "@gateflag/core": "*"
+    "@aws-sdk/client-dynamodb": "^3.917.0",
+    "@aws-sdk/lib-dynamodb": "^3.917.0",
+    "@gateflag/core": "*",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/supertest": "^6.0.3",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.6",
+    "yaml": "^2.8.1"
   }
 }

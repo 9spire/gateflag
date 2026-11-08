@@ -1,0 +1,398 @@
+openapi: 3.1.0
+info:
+  title: Gateflag API
+  version: 1.0.0
+  description: Feature-flag and access-control API used by the Gateflag demo and React library.
+servers:
+  - url: /
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Process is up
+  /api/v1/demo/personas:
+    get:
+      summary: List demo personas
+      operationId: listPersonas
+      responses:
+        '200':
+          description: Persona catalog
+  /api/v1/demo/reset:
+    post:
+      summary: Reset demo data
+      operationId: resetDemo
+      responses:
+        '200':
+          description: Seed reloaded
+        '429':
+          description: Rate limited
+  /api/v1/permissions:
+    get:
+      summary: Effective permissions for the caller
+      operationId: getPermissions
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/AccessClient'
+      responses:
+        '200':
+          description: Permissions payload
+        '401':
+          description: Unauthenticated
+  /api/v1/check:
+    get:
+      summary: Check a single flag
+      operationId: checkFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/AccessClient'
+        - name: flag
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Flag check result
+        '401':
+          description: Unauthenticated
+  /api/v1/admin/flags:
+    get:
+      summary: List flags
+      operationId: adminListFlags
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      responses:
+        '200':
+          description: Flag list
+        '401':
+          description: Unauthenticated
+        '403':
+          description: Forbidden
+    post:
+      summary: Create flag
+      operationId: adminCreateFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /api/v1/admin/flags/{key}:
+    get:
+      summary: Get flag detail
+      operationId: adminGetFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      responses:
+        '200':
+          description: Flag detail
+    put:
+      summary: Update flag
+      operationId: adminUpdateFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+        '409':
+          description: Version conflict
+    delete:
+      summary: Delete flag
+      operationId: adminDeleteFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      responses:
+        '204':
+          description: Deleted
+  /api/v1/admin/flags/{key}/role-access:
+    post:
+      summary: Set access role grant
+      operationId: adminSetFlagRoleAccess
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Updated
+  /api/v1/admin/flags/{key}/group-access:
+    post:
+      summary: Set group grant
+      operationId: adminSetFlagGroupAccess
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Updated
+  /api/v1/admin/flags/{key}/user-access:
+    post:
+      summary: Set user grant
+      operationId: adminSetFlagUserAccess
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/FlagKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Updated
+  /api/v1/admin/users:
+    get:
+      summary: List users
+      operationId: adminListUsers
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      responses:
+        '200':
+          description: User list
+    post:
+      summary: Create user
+      operationId: adminCreateUser
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /api/v1/admin/users/{email}:
+    get:
+      summary: Get user detail
+      operationId: adminGetUser
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/UserEmail'
+      responses:
+        '200':
+          description: User detail
+    put:
+      summary: Update user
+      operationId: adminUpdateUser
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/UserEmail'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Delete user
+      operationId: adminDeleteUser
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/UserEmail'
+      responses:
+        '204':
+          description: Deleted
+        '422':
+          description: Business rule
+  /api/v1/admin/users/{email}/deny-flag:
+    post:
+      summary: Deny a gated flag for a developer
+      operationId: adminDenyFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/UserEmail'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Updated
+  /api/v1/admin/users/{email}/allow-flag:
+    post:
+      summary: Clear a developer deny
+      operationId: adminAllowFlag
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/UserEmail'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '204':
+          description: Updated
+  /api/v1/admin/groups:
+    get:
+      summary: List groups
+      operationId: adminListGroups
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      responses:
+        '200':
+          description: Group list
+    post:
+      summary: Create group
+      operationId: adminCreateGroup
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+  /api/v1/admin/groups/{key}:
+    get:
+      summary: Get group detail
+      operationId: adminGetGroup
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/GroupKey'
+      responses:
+        '200':
+          description: Group detail
+    put:
+      summary: Update group
+      operationId: adminUpdateGroup
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/GroupKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      summary: Delete group
+      operationId: adminDeleteGroup
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/GroupKey'
+      responses:
+        '204':
+          description: Deleted
+  /api/v1/admin/groups/{key}/members:
+    post:
+      summary: Add group member
+      operationId: adminAddGroupMember
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/GroupKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+        '422':
+          description: Business rule
+  /api/v1/admin/groups/{key}/members/{email}:
+    delete:
+      summary: Remove group member
+      operationId: adminRemoveGroupMember
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - $ref: '#/components/parameters/GroupKey'
+        - $ref: '#/components/parameters/UserEmail'
+      responses:
+        '204':
+          description: Deleted
+  /api/v1/admin/audit:
+    get:
+      summary: List audit entries
+      operationId: adminListAudit
+      parameters:
+        - $ref: '#/components/parameters/DemoUser'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audit page
+components:
+  parameters:
+    DemoUser:
+      name: X-Demo-User
+      in: header
+      required: false
+      schema:
+        type: string
+    AccessClient:
+      name: X-Access-Client
+      in: header
+      required: false
+      schema:
+        type: string
+    FlagKey:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+    GroupKey:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+    UserEmail:
+      name: email
+      in: path
+      required: true
+      schema:
+        type: string
