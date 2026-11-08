@@ -1,0 +1,14 @@
+{
+  "name": "@gateflag/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -b",
+    "test": "vitest run --passWithNoTests",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@gateflag/core": "*"
+  }
+}

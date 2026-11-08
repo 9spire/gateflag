@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs / OS / editors
+*.log
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Vite / caches
+.vite/
+.turbo/
+.cache/
+
+# Misc
+*.tgz
+.npm/
