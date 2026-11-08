@@ -1,9 +1,10 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { AdminModal } from '../admin/AdminModal.js';
 import { useAccessControl } from '../context/AccessControlProvider.js';
 
 export type AccessButtonProps = {
   label?: string;
-  /** Reserved for admin modal close wiring (Phase 6). Prefer `useAdminCloseHandler`. */
+  /** Called after the admin modal closes (in addition to permissions refresh). */
   onClose?: () => void;
   children?: ReactNode;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
@@ -16,23 +17,36 @@ export function AccessButton({
   ...rest
 }: AccessButtonProps) {
   const { permissions } = useAccessControl();
+  const [open, setOpen] = useState(false);
 
   if (!permissions?.isAdmin) {
     return null;
   }
 
   return (
-    <button
-      type="button"
-      {...rest}
-      aria-haspopup={onClose ? 'dialog' : rest['aria-haspopup']}
-      onClick={(event) => {
-        onClick?.(event);
-      }}
-      data-gateflag-access-button=""
-    >
-      {children ?? label}
-    </button>
+    <>
+      <button
+        type="button"
+        {...rest}
+        aria-haspopup="dialog"
+        onClick={(event) => {
+          onClick?.(event);
+          setOpen(true);
+        }}
+        data-gateflag-access-button=""
+      >
+        {children ?? label}
+      </button>
+      <AdminModal
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) {
+            onClose?.();
+          }
+        }}
+      />
+    </>
   );
 }
 

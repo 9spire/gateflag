@@ -1,0 +1,21 @@
+@import "tailwindcss" prefix(gf);
+
+@theme {
+  --color-gf-bg: oklch(0.99 0.01 145);
+  --color-gf-fg: oklch(0.25 0.02 145);
+  --color-gf-muted: oklch(0.45 0.02 145);
+  --color-gf-border: oklch(0.88 0.02 145);
+  --color-gf-accent: oklch(0.45 0.08 145);
+  --color-gf-danger: oklch(0.55 0.18 25);
+  --color-gf-surface: oklch(1 0 0);
+}
+
+.gf-gateflag-root {
+  color: var(--color-gf-fg);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    sans-serif;
+}

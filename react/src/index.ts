@@ -13,3 +13,5 @@ export { useFeatureFlag } from './hooks/useFeatureFlag.js';
 export { ProtectedFeature } from './components/ProtectedFeature.js';
 export { AccessButton, useAdminCloseHandler } from './components/AccessButton.js';
 export { AccessControlErrorBoundary } from './components/AccessControlErrorBoundary.js';
+export { AdminModal } from './admin/AdminModal.js';
+export { parseEmailChips } from './admin/emailChips.js';
