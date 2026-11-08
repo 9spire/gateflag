@@ -11,3 +11,4 @@ One line per decision. Newest last.
 - 2026-11-08: Repository contract suite lives in core but is not re-exported from the package barrel (vitest must not load at runtime).
 - 2026-11-08: DynamoDB cascades above 100 TransactWrite items are chunked; chunked cascades are not atomic across chunks.
 - 2026-11-08: Dynamo contract tests skip when `DYNAMODB_ENDPOINT` is unset; CI always sets it. Docker was unavailable on this machine during Phase 4.
+- 2026-11-08: React permissions client dedupes in-flight fetches by apiBaseUrl+userId+accessClientId so identity changes are never blocked by a prior request.
