@@ -23,7 +23,7 @@ export function IntegrateSnippet() {
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="demo-code">
+      <pre className="demo-code" tabIndex={0} aria-label="Integration snippet">
         <code>{SNIPPET}</code>
       </pre>
     </section>

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      dynamodb-local:
+        image: amazon/dynamodb-local:2.5.2
+        ports:
+          - 8000:8000
+    env:
+      DYNAMODB_ENDPOINT: http://localhost:8000
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      DYNAMODB_TABLE_NAME: gateflag
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  compose-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start stack
+        run: docker compose up --build --wait
+      - name: Health
+        run: curl -fsS localhost:8080/health
+      - name: Sam permissions
+        run: |
+          body=$(curl -fsS -H 'X-Demo-User: sam-none' -H 'X-Access-Client: storefront' localhost:8080/api/v1/permissions)
+          echo "$body"
+          echo "$body" | grep -q '"flags":\["DARK_MODE"\]'
+      - name: Tear down
+        if: always()
+        run: docker compose down
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w @gateflag/core && npm run build -w gateflag
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - name: Build demo (browser mode)
+        run: VITE_DEMO_MODE=browser VITE_BASE_PATH=/ npm run build -w @gateflag/demo
+      - name: Preview + Playwright
+        run: |
+          npm run preview -w @gateflag/demo -- --host 127.0.0.1 --port 4173 &
+          echo $! > /tmp/preview.pid
+          npx wait-on http://127.0.0.1:4173
+          npm test -w @gateflag/e2e
+          kill $(cat /tmp/preview.pid) || true

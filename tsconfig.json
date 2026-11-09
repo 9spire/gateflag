@@ -3,7 +3,6 @@
   "references": [
     { "path": "./core" },
     { "path": "./api" },
-    { "path": "./react" },
-    { "path": "./e2e" }
+    { "path": "./react" }
   ]
 }

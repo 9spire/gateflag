@@ -13,3 +13,8 @@ One line per decision. Newest last.
 - 2026-11-08: Dynamo contract tests skip when `DYNAMODB_ENDPOINT` is unset; CI always sets it. Docker was unavailable on this machine during Phase 4.
 - 2026-11-08: React permissions client dedupes in-flight fetches by apiBaseUrl+userId+accessClientId so identity changes are never blocked by a prior request.
 - 2026-11-08: React package CSS uses Tailwind v4 with the `gf` prefix so host app utilities do not collide.
+- 2026-11-08: Demo `dev` / `dev:browser` scripts wired; phase stub removed.
+- 2026-11-08: Docker Compose stack uses api image for seed + api; demo image is nginx + Vite `VITE_DEMO_MODE=api` build.
+- 2026-11-08: Compose verify requires Docker; unavailable on the Phase 8 authoring machine — covered by CI `compose-smoke`.
+- 2026-11-08: `gateflag` npm package bundles `@gateflag/core` so consumers do not need a separate core publish.
+- 2026-11-08: GitHub username for Pages assumed `9spire` (`https://9spire.github.io/gateflag/`).

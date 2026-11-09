@@ -11,7 +11,6 @@ export default defineConfig({
     'react',
     'react-dom',
     'react/jsx-runtime',
-    '@gateflag/core',
     'sonner',
     'lucide-react',
     '@radix-ui/react-dialog',
@@ -19,5 +18,6 @@ export default defineConfig({
     'clsx',
     'class-variance-authority',
   ],
+  noExternal: ['@gateflag/core'],
   treeshake: true,
 });

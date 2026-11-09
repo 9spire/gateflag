@@ -2,10 +2,12 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
-    "noEmit": false
+    "noEmit": true,
+    "composite": false,
+    "types": ["node"]
   },
-  "include": ["src/**/*"]
+  "include": ["playwright.config.ts", "tests/**/*"]
 }
