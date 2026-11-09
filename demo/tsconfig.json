@@ -3,10 +3,11 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "types": ["vite/client"],
+    "noEmit": true,
+    "composite": false
   },
-  "include": ["src/**/*"],
-  "references": [{ "path": "../react" }]
+  "include": ["src"]
 }

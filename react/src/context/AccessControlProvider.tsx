@@ -29,6 +29,7 @@ export function AccessControlProvider({
   const sequenceRef = useRef(0);
   const inFlightKeyRef = useRef<string | null>(null);
   const inFlightPromiseRef = useRef<Promise<void> | null>(null);
+  const activeKeyRef = useRef<string | null>(null);
   const loadRef = useRef<(options?: LoadOptions) => Promise<void>>(async () => undefined);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export function AccessControlProvider({
         setLoading(false);
         inFlightKeyRef.current = null;
         inFlightPromiseRef.current = null;
+        activeKeyRef.current = null;
         return;
       }
 
@@ -54,6 +56,12 @@ export function AccessControlProvider({
 
       const sequence = ++sequenceRef.current;
       setLoading(true);
+      // Fail closed when the signed-in user or access client changes.
+      if (activeKeyRef.current !== requestKey) {
+        setPermissions(null);
+        setError(null);
+        activeKeyRef.current = requestKey;
+      }
       const client = new PermissionsClient(config.apiBaseUrl);
 
       const run = (async () => {

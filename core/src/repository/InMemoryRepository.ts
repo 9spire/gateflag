@@ -427,4 +427,18 @@ export class InMemoryRepository implements Repository {
       this.developerDenies.set(this.denyKey(deny.email, deny.flagKey), clone(deny));
     }
   }
+
+  exportSnapshot(seedVersion: number): SeedSnapshot {
+    return {
+      seedVersion,
+      users: [...this.users.values()].map(clone),
+      flags: [...this.flags.values()].map(clone),
+      groups: [...this.groups.values()].map(clone),
+      memberships: [...this.memberships.values()].map(clone),
+      roleGrants: [...this.roleGrants.values()].map(clone),
+      groupGrants: [...this.groupGrants.values()].map(clone),
+      userGrants: [...this.userGrants.values()].map(clone),
+      developerDenies: [...this.developerDenies.values()].map(clone),
+    };
+  }
 }
