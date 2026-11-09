@@ -17,7 +17,8 @@ RUN npm run build -w @gateflag/core && npm run build -w @gateflag/api \
 FROM node:24-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup -S gateflag && adduser -S gateflag -G gateflag
+RUN apk add --no-cache wget \
+  && addgroup -S gateflag && adduser -S gateflag -G gateflag
 COPY --from=build /app/package.json /app/package-lock.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/core ./core

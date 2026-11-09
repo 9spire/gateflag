@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/dist
+**/.turbo
+**/.git
+**/.DS_Store
+**/coverage
+**/*.tsbuildinfo
+.env
+**/.env
+docs/screenshots
+e2e/test-results
+e2e/playwright-report
+agent-transcripts
