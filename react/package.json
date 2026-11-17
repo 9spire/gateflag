@@ -22,8 +22,14 @@
     "permissions"
   ],
   "type": "module",
-  "sideEffects": ["*.css"],
-  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -47,7 +53,7 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "build:js": "tsup",
-    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify && tailwindcss -i ./src/forms-plugin.css -o ./dist/forms-plugin.css && node ./scripts/merge-form-classes.mjs && rm ./dist/forms-plugin.css",
     "build": "npm run build:js && npm run build:css"
   },
   "peerDependencies": {
@@ -65,6 +71,7 @@
   "devDependencies": {
     "@gateflag/core": "*",
     "@tailwindcss/cli": "^4.1.16",
+    "@tailwindcss/forms": "^0.5.11",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",

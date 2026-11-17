@@ -5,7 +5,9 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return (
     <input
       className={cn(
-        'gf:w-full gf:rounded-md gf:border gf:border-[var(--color-gf-border)] gf:bg-[var(--color-gf-surface)] gf:px-3 gf:py-1.5 gf:text-sm',
+        // Opt-in @tailwindcss/forms class — never applied globally to host pages.
+        'form-input',
+        'gf:w-full gf:rounded-[0.4rem] gf:border-[var(--color-gf-border)] gf:bg-[var(--color-gf-surface)] gf:px-2.5 gf:py-2 gf:text-sm gf:text-[var(--color-gf-fg)] gf:shadow-none gf:focus:border-[var(--color-gf-accent)] gf:focus:ring-[var(--color-gf-accent)]',
         className,
       )}
       {...props}

@@ -4,6 +4,11 @@ import { useAccessControl } from '../context/AccessControlProvider.js';
 
 export type AccessButtonProps = {
   label?: string;
+  /**
+   * When true, always render the button (e.g. demo chrome).
+   * Admin API still needs an admin identity — pair with config.getAdminAuthHeaders.
+   */
+  alwaysShow?: boolean;
   /** Called after the admin modal closes (in addition to permissions refresh). */
   onClose?: () => void;
   children?: ReactNode;
@@ -11,6 +16,7 @@ export type AccessButtonProps = {
 
 export function AccessButton({
   label = 'Admin',
+  alwaysShow = false,
   onClose,
   onClick,
   children,
@@ -19,7 +25,7 @@ export function AccessButton({
   const { permissions } = useAccessControl();
   const [open, setOpen] = useState(false);
 
-  if (!permissions?.isAdmin) {
+  if (!alwaysShow && !permissions?.isAdmin) {
     return null;
   }
 

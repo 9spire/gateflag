@@ -9,6 +9,9 @@ export function useAdminApi() {
 
   const authHeaders = useMemo(() => {
     return async (): Promise<Record<string, string>> => {
+      if (config.getAdminAuthHeaders) {
+        return config.getAdminAuthHeaders();
+      }
       if (config.getAuthHeaders) {
         return config.getAuthHeaders();
       }

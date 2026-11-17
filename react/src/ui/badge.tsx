@@ -9,10 +9,11 @@ export function Badge({
   return (
     <span
       className={cn(
-        'gf:inline-flex gf:rounded gf:px-1.5 gf:py-0.5 gf:text-xs gf:font-medium',
+        'gf:inline-flex gf:rounded-[0.3rem] gf:px-[0.35rem] gf:py-[0.1rem] gf:text-[0.72rem] gf:font-semibold gf:tracking-[0.02em]',
         tone === 'default' && 'gf:bg-[var(--color-gf-bg)] gf:text-[var(--color-gf-muted)]',
-        tone === 'danger' && 'gf:bg-red-100 gf:text-[var(--color-gf-danger)]',
-        tone === 'success' && 'gf:bg-emerald-100 gf:text-emerald-800',
+        tone === 'danger' && 'gf:bg-[var(--color-gf-danger-bg)] gf:text-[var(--color-gf-danger)]',
+        tone === 'success' &&
+          'gf:bg-[var(--color-gf-accent-soft)] gf:text-[var(--color-gf-accent)]',
         className,
       )}
       {...props}

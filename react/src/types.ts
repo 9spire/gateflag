@@ -8,6 +8,8 @@ export interface AccessControlConfig {
   accessClientId?: string;
   pollIntervalMs?: number;
   getAuthHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
+  /** Auth for admin API calls. Defaults to getAuthHeaders / X-Demo-User. */
+  getAdminAuthHeaders?: () => Record<string, string> | Promise<Record<string, string>>;
   onError?: (error: Error) => void;
 }
 

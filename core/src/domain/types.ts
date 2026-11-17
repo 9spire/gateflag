@@ -83,6 +83,8 @@ export interface AuditEntry {
   entityType: 'flag' | 'user' | 'group';
   entityKey: string;
   summary: string;
+  /** Empty = platform-wide (not scoped to an access client / app). */
+  accessClients: string[];
 }
 
 export interface EvaluationResult {
@@ -118,4 +120,5 @@ export interface SeedSnapshot {
   groupGrants: GroupGrant[];
   userGrants: UserGrant[];
   developerDenies: DeveloperDeny[];
+  audit: AuditEntry[];
 }

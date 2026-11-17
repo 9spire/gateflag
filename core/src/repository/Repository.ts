@@ -77,6 +77,10 @@ export interface Repository {
   setMembership(groupKey: string, email: string, membership: Membership | null): Promise<void>;
 
   appendAudit(entry: AuditEntry): Promise<void>;
-  listAudit(options: { limit: number; cursor?: string }): Promise<AuditPage>;
+  listAudit(options: {
+    limit: number;
+    cursor?: string;
+    accessClient?: string;
+  }): Promise<AuditPage>;
   resetTo(seed: SeedSnapshot): Promise<void>;
 }

@@ -1,7 +1,9 @@
 {
-  "seedVersion": 1,
+  "seedVersion": 3,
   "users": [
     { "email": "alex@example.com", "role": "developer" },
+    { "email": "riley@example.com", "role": "developer" },
+    { "email": "casey@example.com", "role": "none" },
     { "email": "dana@example.com", "role": "developer" },
     { "email": "pat@example.com", "role": "access" },
     { "email": "jordan@example.com", "role": "none" },
@@ -99,6 +101,109 @@
       "flagKey": "BETA_SEARCH",
       "email": "dana@example.com",
       "createdBy": "alex@example.com"
+    }
+  ],
+  "audit": [
+    {
+      "id": "seed-bulk-disable",
+      "hoursAgo": 2,
+      "actorEmail": "alex@example.com",
+      "action": "flag.update",
+      "entityType": "flag",
+      "entityKey": "BULK_EXPORT",
+      "summary": "State GATED → DISABLED",
+      "accessClients": ["support-portal"]
+    },
+    {
+      "id": "seed-order-user-grant",
+      "hoursAgo": 5,
+      "actorEmail": "riley@example.com",
+      "action": "flag.user_grant",
+      "entityType": "flag",
+      "entityKey": "ORDER_HISTORY_V2",
+      "summary": "Granted user pat@example.com",
+      "accessClients": ["storefront", "support-portal"]
+    },
+    {
+      "id": "seed-beta-deny",
+      "hoursAgo": 8,
+      "actorEmail": "alex@example.com",
+      "action": "user.deny_flag",
+      "entityType": "user",
+      "entityKey": "dana@example.com",
+      "summary": "Denied BETA_SEARCH for developer",
+      "accessClients": []
+    },
+    {
+      "id": "seed-checkout-group",
+      "hoursAgo": 14,
+      "actorEmail": "riley@example.com",
+      "action": "flag.group_grant",
+      "entityType": "flag",
+      "entityKey": "NEW_CHECKOUT_FLOW",
+      "summary": "Granted group beta-testers",
+      "accessClients": ["storefront", "checkout"]
+    },
+    {
+      "id": "seed-recs-role",
+      "daysAgo": 1,
+      "actorEmail": "alex@example.com",
+      "action": "flag.role_grant",
+      "entityType": "flag",
+      "entityKey": "PRODUCT_RECOMMENDATIONS",
+      "summary": "Granted access role",
+      "accessClients": ["storefront"]
+    },
+    {
+      "id": "seed-support-member",
+      "daysAgo": 1,
+      "hoursAgo": 6,
+      "actorEmail": "casey@example.com",
+      "action": "group.add_member",
+      "entityType": "group",
+      "entityKey": "support-team",
+      "summary": "Added jordan@example.com",
+      "accessClients": []
+    },
+    {
+      "id": "seed-dark-release",
+      "daysAgo": 2,
+      "actorEmail": "alex@example.com",
+      "action": "flag.update",
+      "entityType": "flag",
+      "entityKey": "DARK_MODE",
+      "summary": "State GATED → RELEASED",
+      "accessClients": ["storefront", "checkout", "support-portal"]
+    },
+    {
+      "id": "seed-pat-user",
+      "daysAgo": 3,
+      "actorEmail": "riley@example.com",
+      "action": "user.create",
+      "entityType": "user",
+      "entityKey": "pat@example.com",
+      "summary": "Created user (access)",
+      "accessClients": []
+    },
+    {
+      "id": "seed-beta-group",
+      "daysAgo": 4,
+      "actorEmail": "alex@example.com",
+      "action": "group.create",
+      "entityType": "group",
+      "entityKey": "beta-testers",
+      "summary": "Created group",
+      "accessClients": []
+    },
+    {
+      "id": "seed-beta-search",
+      "daysAgo": 5,
+      "actorEmail": "alex@example.com",
+      "action": "flag.create",
+      "entityType": "flag",
+      "entityKey": "BETA_SEARCH",
+      "summary": "Created flag (GATED)",
+      "accessClients": ["storefront", "support-portal"]
     }
   ]
 }

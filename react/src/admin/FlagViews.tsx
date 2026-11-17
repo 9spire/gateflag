@@ -2,7 +2,10 @@ import type { Flag, Group, User } from '@gateflag/core';
 import { useState } from 'react';
 import { Button } from '../ui/button.js';
 import { Badge } from '../ui/badge.js';
+import { Checkbox } from '../ui/checkbox.js';
 import { Input } from '../ui/input.js';
+import { Select } from '../ui/select.js';
+import { accessClientLabel, KNOWN_ACCESS_CLIENTS } from './accessClients.js';
 import { parseEmailChips } from './emailChips.js';
 import { filterByQuery, paginate } from './pagination.js';
 import { isConflict, useAdminApi } from './useAdminApi.js';
@@ -39,8 +42,9 @@ export function FlagList({
 
   return (
     <div className="gf:space-y-3">
-      <div className="gf:flex gf:flex-wrap gf:gap-2">
+      <div className="gf:flex gf:flex-wrap gf:items-center gf:gap-2">
         <Input
+          className="gf:min-w-0 gf:flex-1"
           aria-label="Search flags"
           placeholder="Search flags"
           value={query}
@@ -49,21 +53,25 @@ export function FlagList({
             setPage(1);
           }}
         />
-        <select
+        <Select
           aria-label="Show flags for"
-          className="gf:rounded-md gf:border gf:border-[var(--color-gf-border)] gf:px-2 gf:py-1.5 gf:text-sm"
+          className="gf:w-auto gf:shrink-0 gf:min-w-[11rem]"
           value={appFilter}
           onChange={(event) => {
             setAppFilter(event.target.value);
             setPage(1);
           }}
         >
-          <option value="">All apps</option>
-          <option value="storefront">storefront</option>
-          <option value="checkout">checkout</option>
-          <option value="support-portal">support-portal</option>
-        </select>
-        <Button onClick={onCreate}>Create flag</Button>
+          <option value="">All Apps</option>
+          {KNOWN_ACCESS_CLIENTS.map((client) => (
+            <option key={client} value={client}>
+              {accessClientLabel(client)}
+            </option>
+          ))}
+        </Select>
+        <Button className="gf:shrink-0 gf:whitespace-nowrap" onClick={onCreate}>
+          Create flag
+        </Button>
       </div>
       <ul className="gf:space-y-2">
         {pageItems.map((flag) => (
@@ -77,7 +85,7 @@ export function FlagList({
               <div className="gf:mt-1 gf:flex gf:gap-2">
                 <Badge>{flag.universalState}</Badge>
                 <span className="gf:text-xs gf:text-[var(--color-gf-muted)]">
-                  {flag.accessClients.join(', ')}
+                  {flag.accessClients.map(accessClientLabel).join(', ')}
                 </span>
               </div>
             </div>
@@ -160,6 +168,16 @@ export function FlagEditor({
           headers,
         );
         await client.setRoleAccess(key, { role: 'access', hasAccess: hasAccessRole }, headers);
+        const originalEmails = new Set(initial?.userGrants?.map((grant) => grant.email) ?? []);
+        const nextEmails = new Set(manualEmails);
+        await Promise.all([
+          ...[...nextEmails]
+            .filter((email) => !originalEmails.has(email))
+            .map((email) => client.setUserAccess(key, { email, hasAccess: true }, headers)),
+          ...[...originalEmails]
+            .filter((email) => !nextEmails.has(email))
+            .map((email) => client.setUserAccess(key, { email, hasAccess: false }, headers)),
+        ]);
         toastSuccess('Flag saved');
       }
       onSaved();
@@ -237,11 +255,10 @@ export function FlagEditor({
         </div>
       </fieldset>
       <fieldset className="gf:space-y-2">
-        <legend className="gf:text-sm gf:font-medium">Access clients</legend>
-        {['storefront', 'checkout', 'support-portal'].map((client) => (
+        <legend className="gf:text-sm gf:font-medium">Apps</legend>
+        {KNOWN_ACCESS_CLIENTS.map((client) => (
           <label key={client} className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={accessClients.includes(client)}
               onChange={(event) => {
                 setAccessClients((prev) =>
@@ -251,20 +268,24 @@ export function FlagEditor({
                 );
               }}
             />
-            {client}
+            {accessClientLabel(client)}
           </label>
         ))}
       </fieldset>
       {universalState === 'GATED' ? (
         <div className="gf:space-y-3 gf:rounded-md gf:border gf:border-[var(--color-gf-border)] gf:p-3">
-          <label className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-            <input
-              type="checkbox"
-              checked={hasAccessRole}
-              onChange={(event) => setHasAccessRole(event.target.checked)}
-            />
-            Access role
-          </label>
+          <div>
+            <label className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
+              <Checkbox
+                checked={hasAccessRole}
+                onChange={(event) => setHasAccessRole(event.target.checked)}
+              />
+              Access role
+            </label>
+            <p className="gf:mt-1 gf:pl-6 gf:text-xs gf:text-[var(--color-gf-muted)]">
+              Grants this flag to every user with the Gateflag <code>access</code> role.
+            </p>
+          </div>
           <div>
             <div className="gf:mb-1 gf:text-sm gf:font-medium">Groups</div>
             {groups.map((group) => (
@@ -287,8 +308,7 @@ export function FlagEditor({
             <div className="gf:mb-1 gf:text-sm gf:font-medium">Individual grants</div>
             {nonDevelopers.map((user) => (
               <label key={user.email} className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={manualEmails.includes(user.email)}
                   onChange={(event) => {
                     setManualEmails((prev) =>
@@ -353,9 +373,7 @@ export function FlagEditor({
           aria-label="Confirm release"
           className="gf:rounded-md gf:border gf:border-[var(--color-gf-border)] gf:bg-[var(--color-gf-bg)] gf:p-3"
         >
-          <p className="gf:text-sm">
-            Everyone will get access, regardless of the grants below.
-          </p>
+          <p className="gf:text-sm">Everyone will get access, regardless of the grants below.</p>
           <div className="gf:mt-2 gf:flex gf:gap-2">
             <Button
               onClick={() => {
@@ -392,11 +410,7 @@ function Pager({
       <span>
         Page {page} / {totalPages}
       </span>
-      <Button
-        variant="secondary"
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-      >
+      <Button variant="secondary" disabled={page >= totalPages} onClick={() => onChange(page + 1)}>
         Next
       </Button>
     </div>

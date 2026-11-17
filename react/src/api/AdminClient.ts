@@ -171,7 +171,7 @@ export class AdminClient {
 
   listAudit(
     headers: Record<string, string>,
-    query: { limit?: number; cursor?: string } = {},
+    query: { limit?: number; cursor?: string; accessClient?: string } = {},
   ): Promise<{ items: AuditEntry[]; nextCursor: string | null }> {
     const params = new URLSearchParams();
     if (query.limit !== undefined) {
@@ -179,6 +179,9 @@ export class AdminClient {
     }
     if (query.cursor) {
       params.set('cursor', query.cursor);
+    }
+    if (query.accessClient) {
+      params.set('accessClient', query.accessClient);
     }
     const suffix = params.toString() ? `?${params.toString()}` : '';
     return apiFetch(this.apiBaseUrl, `/api/v1/admin/audit${suffix}`, { headers });

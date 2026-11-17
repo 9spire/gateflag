@@ -7,18 +7,27 @@ import {
   useAdminCloseHandler,
 } from 'gateflag';
 import { useCallback, useMemo, useState } from 'react';
-import { ACCESS_CLIENTS, type AccessClientId } from './data/flags.js';
-import { AppSwitcher } from './panels/AppSwitcher.js';
+import {
+  ADMIN_PERSONA,
+  resolveViewAs,
+  viewAsForPersona,
+  type ViewAs,
+} from './data/audiences.js';
+import { ACCESS_CLIENTS, flagsForClient, type AccessClientId } from './data/flags.js';
+import { AppPicker } from './panels/AppPicker.js';
+import { AudienceRail } from './panels/AudienceRail.js';
 import { FeatureCards } from './panels/FeatureCards.js';
+import { GuidedTour } from './panels/GuidedTour.js';
 import { IntegrateSnippet } from './panels/IntegrateSnippet.js';
-import { PersonaSwitcher } from './panels/PersonaSwitcher.js';
-import { TryThis } from './panels/TryThis.js';
-import { WhyPanel } from './panels/WhyPanel.js';
+import { ThemeToggle } from './panels/ThemeToggle.js';
+import { ViewAsSummary, viewAsTitle } from './panels/ViewAsSummary.js';
 
 const PERSONA_KEY = 'gateflag:persona';
 const APP_KEY = 'gateflag:app';
+const VIEW_AS_KEY = 'gateflag:view-as';
 const DEFAULT_PERSONA = 'sam-none';
 const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'browser' ? 'browser' : 'api';
+const { personas: PERSONAS } = loadPersonas();
 
 function loadPersonaId(personas: Persona[]): string {
   try {
@@ -46,25 +55,38 @@ function loadAppId(): AccessClientId {
   return 'storefront';
 }
 
+function loadViewAs(personaId: string): ViewAs {
+  try {
+    const stored = JSON.parse(localStorage.getItem(VIEW_AS_KEY) ?? 'null') as ViewAs | null;
+    if (stored && resolveViewAs(stored).personaId === personaId) {
+      return stored;
+    }
+  } catch {
+    /* ignore */
+  }
+  return viewAsForPersona(personaId);
+}
+
 function DemoChrome({
-  personas,
   personaId,
-  setPersonaId,
+  viewAs,
+  setViewAs,
   accessClientId,
   setAccessClientId,
 }: {
-  personas: Persona[];
   personaId: string;
-  setPersonaId: (id: string) => void;
+  viewAs: ViewAs;
+  setViewAs: (viewAs: ViewAs) => void;
   accessClientId: AccessClientId;
   setAccessClientId: (id: AccessClientId) => void;
 }) {
-  const { refresh, error } = useAccessControl();
+  const { permissions, refresh, error } = useAccessControl();
   const onAdminClose = useAdminCloseHandler();
   const [resetting, setResetting] = useState(false);
-  const persona = personas.find((entry) => entry.id === personaId) ?? personas[0];
   const appLabel =
     ACCESS_CLIENTS.find((client) => client.id === accessClientId)?.label ?? accessClientId;
+  const keys = flagsForClient(accessClientId);
+  const unlocked = keys.filter((key) => permissions?.evaluations[key]?.granted).length;
 
   const resetDemo = useCallback(async () => {
     setResetting(true);
@@ -87,26 +109,16 @@ function DemoChrome({
       <header className="demo-header">
         <div className="demo-brand">
           <span className="demo-wordmark">Gateflag</span>
-          <span className="demo-muted">Acme · {appLabel}</span>
+          <span className="demo-muted">Acme demo</span>
         </div>
-        <div className="demo-controls">
-          <AppSwitcher
-            value={accessClientId}
-            onChange={(id) => {
-              setAccessClientId(id);
-              localStorage.setItem(APP_KEY, id);
-            }}
-          />
-          <PersonaSwitcher
-            personas={personas}
-            value={personaId}
-            onChange={(id) => {
-              setPersonaId(id);
-              localStorage.setItem(PERSONA_KEY, id);
-            }}
-          />
+        <div className="demo-header-center">
+          <AppPicker value={accessClientId} onChange={setAccessClientId} />
+        </div>
+        <div className="demo-controls" aria-label="Demo controls">
+          <ThemeToggle />
           <AccessButton
             label="Admin"
+            alwaysShow
             className="demo-btn demo-btn-primary"
             onClose={onAdminClose}
           />
@@ -128,22 +140,24 @@ function DemoChrome({
       ) : null}
 
       <div className="demo-layout">
+        <AudienceRail viewAs={viewAs} onChange={setViewAs} accessClientId={accessClientId} />
+
         <main className="demo-main">
           <div className="demo-main-head">
-            <h1>{appLabel}</h1>
+            <h1>
+              {appLabel} <span className="demo-muted-inline">as {viewAsTitle(viewAs)}</span>
+            </h1>
+            <ViewAsSummary viewAs={viewAs} personas={PERSONAS} accessClientId={accessClientId} />
             <p className="demo-lede">
-              Mock Acme surface for <strong>{persona?.displayName ?? 'guest'}</strong>. Cards
-              unlock when Gateflag grants the flag for this app.
+              {unlocked} of {keys.length} features unlocked. Each card says why.
             </p>
           </div>
           <FeatureCards accessClientId={accessClientId} />
         </main>
-        <aside className="demo-sidebar">
-          <WhyPanel
-            personaName={persona?.displayName ?? 'this user'}
-            accessClientId={accessClientId}
-          />
-          <TryThis />
+
+        <aside className="demo-sidebar" aria-label="Learn">
+          <p className="demo-field-label">Learn</p>
+          <GuidedTour viewAs={viewAs} onSwitch={setViewAs} />
           <IntegrateSnippet />
         </aside>
       </div>
@@ -152,15 +166,29 @@ function DemoChrome({
 }
 
 export function App() {
-  const personas = useMemo(() => loadPersonas().personas, []);
-  const [personaId, setPersonaId] = useState(() => loadPersonaId(personas));
-  const [accessClientId, setAccessClientId] = useState<AccessClientId>(loadAppId);
+  const [personaId, setPersonaIdState] = useState(() => loadPersonaId(PERSONAS));
+  const [viewAs, setViewAsState] = useState<ViewAs>(() => loadViewAs(personaId));
+  const [accessClientId, setAccessClientIdState] = useState<AccessClientId>(loadAppId);
+
+  const setViewAs = useCallback((next: ViewAs) => {
+    const nextPersonaId = resolveViewAs(next).personaId;
+    setViewAsState(next);
+    setPersonaIdState(nextPersonaId);
+    localStorage.setItem(VIEW_AS_KEY, JSON.stringify(next));
+    localStorage.setItem(PERSONA_KEY, nextPersonaId);
+  }, []);
+  const setAccessClientId = useCallback((id: AccessClientId) => {
+    setAccessClientIdState(id);
+    localStorage.setItem(APP_KEY, id);
+  }, []);
 
   const config = useMemo(
     () => ({
       apiBaseUrl: '',
       userId: personaId,
       accessClientId,
+      // Demo chrome keeps Admin available while View as changes feature permissions.
+      getAdminAuthHeaders: () => ({ 'X-Demo-User': ADMIN_PERSONA }),
     }),
     [personaId, accessClientId],
   );
@@ -169,9 +197,9 @@ export function App() {
     <AccessControlErrorBoundary>
       <AccessControlProvider config={config}>
         <DemoChrome
-          personas={personas}
           personaId={personaId}
-          setPersonaId={setPersonaId}
+          viewAs={viewAs}
+          setViewAs={setViewAs}
           accessClientId={accessClientId}
           setAccessClientId={setAccessClientId}
         />

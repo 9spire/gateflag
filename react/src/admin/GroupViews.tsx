@@ -2,8 +2,10 @@ import type { Group, User } from '@gateflag/core';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button.js';
 import { Badge } from '../ui/badge.js';
+import { Checkbox } from '../ui/checkbox.js';
 import { Input } from '../ui/input.js';
 import { parseEmailChips } from './emailChips.js';
+import { EnterpriseRoleLink, getLinkedEnterpriseRole } from './EnterpriseRoleLink.js';
 import { filterByQuery, paginate } from './pagination.js';
 import { isConflict, useAdminApi } from './useAdminApi.js';
 import { toastConflict, toastError, toastSuccess } from './toast.js';
@@ -30,8 +32,9 @@ export function GroupList({
 
   return (
     <div className="gf:space-y-3">
-      <div className="gf:flex gf:gap-2">
+      <div className="gf:flex gf:items-center gf:gap-2">
         <Input
+          className="gf:min-w-0 gf:flex-1"
           aria-label="Search groups"
           placeholder="Search groups"
           value={query}
@@ -40,25 +43,33 @@ export function GroupList({
             setPage(1);
           }}
         />
-        <Button onClick={onCreate}>Create group</Button>
+        <Button className="gf:shrink-0 gf:whitespace-nowrap" onClick={onCreate}>
+          Create group
+        </Button>
       </div>
       <ul className="gf:space-y-2">
-        {pageItems.map((group) => (
-          <li
-            key={group.key}
-            className="gf:flex gf:items-center gf:justify-between gf:border-b gf:border-[var(--color-gf-border)] gf:pb-2"
-          >
-            <div>
-              <div className="gf:font-medium">{group.key}</div>
-              <div className="gf:text-sm gf:text-[var(--color-gf-muted)]">
-                {group.description} · {group.memberCount ?? 0} members
+        {pageItems.map((group) => {
+          const linkedRole = getLinkedEnterpriseRole(group.key);
+          return (
+            <li
+              key={group.key}
+              className="gf:flex gf:items-center gf:justify-between gf:border-b gf:border-[var(--color-gf-border)] gf:pb-2"
+            >
+              <div>
+                <div className="gf:flex gf:flex-wrap gf:items-center gf:gap-2">
+                  <span className="gf:font-medium">{group.key}</span>
+                  {linkedRole ? <Badge>Linked: {linkedRole}</Badge> : null}
+                </div>
+                <div className="gf:text-sm gf:text-[var(--color-gf-muted)]">
+                  {group.description} · {group.memberCount ?? 0} members
+                </div>
               </div>
-            </div>
-            <Button variant="secondary" onClick={() => onEdit(group.key)}>
-              Edit
-            </Button>
-          </li>
-        ))}
+              <Button variant="secondary" onClick={() => onEdit(group.key)}>
+                Edit
+              </Button>
+            </li>
+          );
+        })}
       </ul>
       <div className="gf:text-sm">
         Page {page} / {totalPages}
@@ -93,10 +104,7 @@ export function GroupEditor({
   const [emailInvalid, setEmailInvalid] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const eligibleUsers = useMemo(
-    () => users.filter((user) => user.role !== 'developer'),
-    [users],
-  );
+  const eligibleUsers = useMemo(() => users.filter((user) => user.role !== 'developer'), [users]);
   const visibleUsers = filterByQuery(eligibleUsers, memberQuery, (user) => user.email);
 
   async function save() {
@@ -158,8 +166,7 @@ export function GroupEditor({
         />
       </label>
       <label className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={temporary}
           onChange={(event) => setTemporary(event.target.checked)}
         />
@@ -194,8 +201,7 @@ export function GroupEditor({
           {visibleUsers.map((user) => (
             <li key={user.email}>
               <label className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selected.has(user.email)}
                   onChange={(event) => {
                     setSelected((prev) => {
@@ -252,6 +258,7 @@ export function GroupEditor({
           ))}
         </div>
       ) : null}
+      {key.trim() ? <EnterpriseRoleLink groupKey={key.trim()} /> : null}
       <div className="gf:flex gf:gap-2">
         <Button disabled={loading} onClick={() => void save()}>
           {loading ? 'Saving…' : 'Save'}

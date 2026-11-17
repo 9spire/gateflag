@@ -712,18 +712,34 @@ export class DynamoRepository implements Repository {
           auditEntityType: entry.entityType,
           entityKey: entry.entityKey,
           summary: entry.summary,
+          accessClients: entry.accessClients,
           ttl: ttlFromNow(new Date(entry.at), 90),
         },
       }),
     );
   }
 
-  async listAudit(options: { limit: number; cursor?: string }): Promise<AuditPage> {
+  async listAudit(options: {
+    limit: number;
+    cursor?: string;
+    accessClient?: string;
+  }): Promise<AuditPage> {
+    const expressionAttributeValues: Record<string, unknown> = { ':pk': 'AUDIT' };
+    let filterExpression: string | undefined;
+    if (options.accessClient) {
+      expressionAttributeValues[':client'] = options.accessClient;
+      expressionAttributeValues[':empty'] = [];
+      // Platform-wide (empty) entries always match; otherwise require the client.
+      filterExpression =
+        'attribute_not_exists(accessClients) OR accessClients = :empty OR contains(accessClients, :client)';
+    }
+
     const result = await this.doc.send(
       new QueryCommand({
         TableName: this.tableName,
         KeyConditionExpression: 'PK = :pk',
-        ExpressionAttributeValues: { ':pk': 'AUDIT' },
+        ExpressionAttributeValues: expressionAttributeValues,
+        FilterExpression: filterExpression,
         ScanIndexForward: false,
         Limit: options.limit,
         ExclusiveStartKey: options.cursor
@@ -740,6 +756,9 @@ export class DynamoRepository implements Repository {
         entityType: item.auditEntityType as AuditEntry['entityType'],
         entityKey: String(item.entityKey),
         summary: String(item.summary),
+        accessClients: Array.isArray(item.accessClients)
+          ? (item.accessClients as string[])
+          : [],
       }),
     );
     const last = mapped[mapped.length - 1];
@@ -796,6 +815,9 @@ export class DynamoRepository implements Repository {
     }
     for (const deny of seed.developerDenies) {
       await this.setDeveloperDeny(deny.email, deny.flagKey, deny);
+    }
+    for (const entry of seed.audit ?? []) {
+      await this.appendAudit(entry);
     }
   }
 }

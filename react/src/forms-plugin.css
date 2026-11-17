@@ -1,0 +1,6 @@
+/* Built without the gf prefix so @tailwindcss/forms can emit .form-* classes.
+   Only those opt-in classes are copied into dist/styles.css — never base/preflight. */
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms' {
+  strategy: 'class';
+}

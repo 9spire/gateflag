@@ -176,6 +176,7 @@ export function runRepositoryContract(
         entityType: 'flag',
         entityKey: 'A',
         summary: 'one',
+        accessClients: ['storefront'],
       });
       await r.appendAudit({
         id: '2',
@@ -185,6 +186,7 @@ export function runRepositoryContract(
         entityType: 'flag',
         entityKey: 'B',
         summary: 'two',
+        accessClients: ['checkout'],
       });
       const page1 = await r.listAudit({ limit: 1 });
       expect(page1.items[0]?.id).toBe('2');
@@ -192,6 +194,42 @@ export function runRepositoryContract(
       const page2 = await r.listAudit({ limit: 1, cursor: page1.nextCursor! });
       expect(page2.items[0]?.id).toBe('1');
       expect(page2.nextCursor).toBeNull();
+    });
+
+    it('filters audit by accessClient and includes platform-wide entries', async () => {
+      const r = await repo();
+      await r.appendAudit({
+        id: 'store',
+        at: '2026-01-03T00:00:00.000Z',
+        actorEmail: 'a@example.com',
+        action: 'flag.update',
+        entityType: 'flag',
+        entityKey: 'A',
+        summary: 'storefront only',
+        accessClients: ['storefront'],
+      });
+      await r.appendAudit({
+        id: 'checkout',
+        at: '2026-01-02T00:00:00.000Z',
+        actorEmail: 'a@example.com',
+        action: 'flag.update',
+        entityType: 'flag',
+        entityKey: 'B',
+        summary: 'checkout only',
+        accessClients: ['checkout'],
+      });
+      await r.appendAudit({
+        id: 'global',
+        at: '2026-01-01T00:00:00.000Z',
+        actorEmail: 'a@example.com',
+        action: 'user.create',
+        entityType: 'user',
+        entityKey: 'u@example.com',
+        summary: 'platform-wide',
+        accessClients: [],
+      });
+      const page = await r.listAudit({ limit: 10, accessClient: 'storefront' });
+      expect(page.items.map((entry) => entry.id)).toEqual(['store', 'global']);
     });
   });
 }

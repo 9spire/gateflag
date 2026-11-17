@@ -4,7 +4,7 @@
 
 **Live demo:** [https://9spire.github.io/gateflag/](https://9spire.github.io/gateflag/)
 
-> **GIF to record:** open the Pages demo in browser mode → start as Sam (most cards locked) → switch persona to Pat (three more cards unlock; Why panel shows group / role / user grant reasons) → switch to Alex → click Admin. Export as `docs/screenshots/persona-switch.gif` and drop it here.
+> **GIF to record:** open the Pages demo in browser mode → start as Sam (most cards locked) → pick the `beta-testers` group in the rail (three more cards unlock; each card shows its group / role / user grant reason) → use View as to switch to Alex → click Admin. Export as `docs/screenshots/persona-switch.gif` and drop it here.
 
 ![Gateflag demo — Sam (locked) vs Pat (unlocked)](docs/screenshots/01-sam-storefront.png)
 

@@ -2,7 +2,9 @@ import type { Flag, User } from '@gateflag/core';
 import { useState } from 'react';
 import { Button } from '../ui/button.js';
 import { Badge } from '../ui/badge.js';
+import { Checkbox } from '../ui/checkbox.js';
 import { Input } from '../ui/input.js';
+import { Select } from '../ui/select.js';
 import { filterByQuery, paginate } from './pagination.js';
 import { isConflict, useAdminApi } from './useAdminApi.js';
 import { toastConflict, toastError, toastSuccess } from './toast.js';
@@ -29,8 +31,9 @@ export function UserList({
 
   return (
     <div className="gf:space-y-3">
-      <div className="gf:flex gf:gap-2">
+      <div className="gf:flex gf:items-center gf:gap-2">
         <Input
+          className="gf:min-w-0 gf:flex-1"
           aria-label="Search users"
           placeholder="Search users"
           value={query}
@@ -39,7 +42,9 @@ export function UserList({
             setPage(1);
           }}
         />
-        <Button onClick={onCreate}>Create user</Button>
+        <Button className="gf:shrink-0 gf:whitespace-nowrap" onClick={onCreate}>
+          Create user
+        </Button>
       </div>
       <ul className="gf:space-y-2">
         {pageItems.map((user) => (
@@ -51,7 +56,9 @@ export function UserList({
               <div className="gf:font-medium">{user.email}</div>
               <div className="gf:flex gf:gap-2">
                 <Badge>{user.role}</Badge>
-                {user.isAdmin ? <Badge tone="success">Admin (managed by identity provider)</Badge> : null}
+                {user.isAdmin ? (
+                  <Badge tone="success">Admin (managed by identity provider)</Badge>
+                ) : null}
               </div>
             </div>
             <Button variant="secondary" onClick={() => onEdit(user.email)}>
@@ -89,8 +96,12 @@ export function UserEditor({
   const [denies, setDenies] = useState(
     new Set(initial?.developerDenies?.map((deny) => deny.flagKey) ?? []),
   );
+  const [grants, setGrants] = useState(
+    new Set(initial?.userGrants?.map((grant) => grant.flagKey) ?? []),
+  );
 
   const gated = flags.filter((flag) => flag.universalState === 'GATED');
+  const accessRoleFlags = new Set(initial?.gatedFlagsWithAccessRole ?? []);
 
   async function save() {
     setLoading(true);
@@ -100,17 +111,30 @@ export function UserEditor({
         await client.createUser({ email, role }, headers);
       } else {
         await client.updateUser(email, { role, version: initial!.version }, headers);
-        if (role === 'developer') {
-          const original = new Set(initial?.developerDenies?.map((deny) => deny.flagKey) ?? []);
-          await Promise.all([
-            ...[...denies]
-              .filter((key) => !original.has(key))
-              .map((flagKey) => client.denyFlag(email, { flagKey }, headers)),
-            ...[...original]
-              .filter((key) => !denies.has(key))
-              .map((flagKey) => client.allowFlag(email, { flagKey }, headers)),
-          ]);
-        }
+      }
+
+      if (role === 'developer') {
+        const original = new Set(initial?.developerDenies?.map((deny) => deny.flagKey) ?? []);
+        await Promise.all([
+          ...[...denies]
+            .filter((key) => !original.has(key))
+            .map((flagKey) => client.denyFlag(email, { flagKey }, headers)),
+          ...[...original]
+            .filter((key) => !denies.has(key))
+            .map((flagKey) => client.allowFlag(email, { flagKey }, headers)),
+        ]);
+      } else {
+        const original = new Set(initial?.userGrants?.map((grant) => grant.flagKey) ?? []);
+        await Promise.all([
+          ...[...grants]
+            .filter((key) => !original.has(key))
+            .map((flagKey) => client.setUserAccess(flagKey, { email, hasAccess: true }, headers)),
+          ...[...original]
+            .filter((key) => !grants.has(key))
+            .map((flagKey) =>
+              client.setUserAccess(flagKey, { email, hasAccess: false }, headers),
+            ),
+        ]);
       }
       toastSuccess('User saved');
       onSaved();
@@ -141,20 +165,17 @@ export function UserEditor({
       </label>
       <label className="gf:block gf:space-y-1">
         <span className="gf:text-sm gf:font-medium">Role</span>
-        <select
+        <Select
           aria-label="User role"
-          className="gf:w-full gf:rounded-md gf:border gf:border-[var(--color-gf-border)] gf:px-3 gf:py-1.5 gf:text-sm"
           value={role}
           onChange={(event) => setRole(event.target.value as User['role'])}
         >
           <option value="none">none</option>
           <option value="access">access</option>
           <option value="developer">developer</option>
-        </select>
+        </Select>
       </label>
-      {initial?.isAdmin ? (
-        <Badge tone="success">Admin (managed by identity provider)</Badge>
-      ) : null}
+      {initial?.isAdmin ? <Badge tone="success">Admin (managed by identity provider)</Badge> : null}
       {role === 'developer' ? (
         <div>
           <div className="gf:mb-2 gf:text-sm gf:font-medium">Developer auto-granted flags</div>
@@ -163,8 +184,7 @@ export function UserEditor({
           </p>
           {gated.map((flag) => (
             <label key={flag.key} className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 aria-label={`Toggle ${flag.key}`}
                 checked={!denies.has(flag.key)}
                 onChange={(event) => {
@@ -186,14 +206,35 @@ export function UserEditor({
       ) : (
         <div>
           <div className="gf:mb-2 gf:text-sm gf:font-medium">Individual flag grants</div>
+          <p className="gf:mb-2 gf:text-xs gf:text-[var(--color-gf-muted)]">
+            Grants this person a GATED flag directly. Access-role grants stay read-only.
+          </p>
           {gated.map((flag) => {
-            const viaRole = initial?.gatedFlagsWithAccessRole?.includes(flag.key);
+            const viaRole = role === 'access' && accessRoleFlags.has(flag.key);
+            const hasIndividual = grants.has(flag.key);
+            const lockedByRole = viaRole && !hasIndividual;
             return (
-              <div key={flag.key} className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
-                <input type="checkbox" checked={Boolean(viaRole)} readOnly disabled={Boolean(viaRole)} />
+              <label key={flag.key} className="gf:flex gf:items-center gf:gap-2 gf:text-sm">
+                <Checkbox
+                  aria-label={`Grant ${flag.key}`}
+                  checked={viaRole || hasIndividual}
+                  disabled={lockedByRole}
+                  onChange={(event) => {
+                    setGrants((prev) => {
+                      const next = new Set(prev);
+                      if (event.target.checked) {
+                        next.add(flag.key);
+                      } else {
+                        next.delete(flag.key);
+                      }
+                      return next;
+                    });
+                  }}
+                />
                 {flag.key}
                 {viaRole ? <Badge>Access role</Badge> : null}
-              </div>
+                {hasIndividual ? <Badge tone="success">Individual</Badge> : null}
+              </label>
             );
           })}
         </div>

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { addDaysIso } from '../domain/evaluator.js';
 import type {
+  AuditEntry,
   DeveloperDeny,
   Flag,
   Group,
@@ -83,6 +84,19 @@ const SeedFileSchema = z.object({
       createdBy: EmailSchema,
     }),
   ),
+  audit: z.array(
+    z.object({
+      id: z.string().min(1),
+      hoursAgo: z.number().nonnegative().optional(),
+      daysAgo: z.number().nonnegative().optional(),
+      actorEmail: EmailSchema,
+      action: z.string().min(1),
+      entityType: z.enum(['flag', 'user', 'group']),
+      entityKey: z.string().min(1),
+      summary: z.string().min(1),
+      accessClients: z.array(z.string().min(1)).default([]),
+    }),
+  ),
 });
 
 const PersonasFileSchema = z.object({
@@ -106,6 +120,17 @@ function relativeToAbsolute(now: Date, expiresInDays: number | null): string | n
     return null;
   }
   return addDaysIso(now, expiresInDays);
+}
+
+function relativeAuditAt(
+  now: Date,
+  entry: { hoursAgo?: number; daysAgo?: number },
+): string {
+  const ms =
+    now.getTime() -
+    (entry.daysAgo ?? 0) * 24 * 60 * 60 * 1000 -
+    (entry.hoursAgo ?? 0) * 60 * 60 * 1000;
+  return new Date(ms).toISOString();
 }
 
 export function loadPersonas(data: unknown = rawPersonas): PersonasFile {
@@ -179,6 +204,17 @@ export function loadSeed(now: Date, data: unknown = rawSeed): SeedSnapshot {
     createdAt: at,
   }));
 
+  const audit: AuditEntry[] = parsed.audit.map((entry) => ({
+    id: entry.id,
+    at: relativeAuditAt(now, entry),
+    actorEmail: entry.actorEmail,
+    action: entry.action,
+    entityType: entry.entityType,
+    entityKey: entry.entityKey,
+    summary: entry.summary,
+    accessClients: entry.accessClients,
+  }));
+
   return {
     seedVersion: parsed.seedVersion,
     users,
@@ -189,5 +225,6 @@ export function loadSeed(now: Date, data: unknown = rawSeed): SeedSnapshot {
     groupGrants,
     userGrants,
     developerDenies,
+    audit,
   };
 }

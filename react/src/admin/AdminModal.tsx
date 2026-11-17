@@ -37,6 +37,7 @@ export function AdminModal({
   const [groups, setGroups] = useState<Array<Group & { memberCount: number }>>([]);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [auditCursor, setAuditCursor] = useState<string | null>(null);
+  const [auditAccessClient, setAuditAccessClient] = useState('');
   const [flagDetail, setFlagDetail] = useState<(Flag & Record<string, unknown>) | null>(null);
   const [userDetail, setUserDetail] = useState<(User & Record<string, unknown>) | null>(null);
   const [groupDetail, setGroupDetail] = useState<(Group & Record<string, unknown>) | null>(null);
@@ -89,15 +90,22 @@ export function AdminModal({
     }
   }
 
-  async function loadAudit() {
+  async function loadAudit(accessClient = auditAccessClient) {
     try {
-      const page = await client.listAudit(await authHeaders(), { limit: 50 });
+      const page = await client.listAudit(await authHeaders(), {
+        limit: 50,
+        accessClient: accessClient || undefined,
+      });
       setAudit(page.items);
       setAuditCursor(page.nextCursor);
     } catch (error) {
       toastError(error instanceof Error ? error.message : 'Failed to load audit');
     }
   }
+
+  const auditAccessClients = [
+    ...new Set(flags.flatMap((flag) => flag.accessClients)),
+  ].sort((a, b) => a.localeCompare(b));
 
   async function openFlag(key: string) {
     setView({ kind: 'flag-edit', key });
@@ -114,7 +122,8 @@ export function AdminModal({
     setGroupDetail(await client.getGroup(key, await authHeaders()));
   }
 
-  if (!permissions?.isAdmin) {
+  const canUseAdmin = Boolean(permissions?.isAdmin) || Boolean(config.getAdminAuthHeaders);
+  if (!canUseAdmin) {
     return null;
   }
 
@@ -142,15 +151,27 @@ export function AdminModal({
           }
         }}
       >
-        <DialogContent title="Gateflag admin">
-          <div className="gf-gateflag-root gf:space-y-4">
-            <div className="gf:flex gf:gap-2" role="tablist" aria-label="Admin sections">
+        <DialogContent
+          title="Gateflag admin"
+          className="gf:h-[min(900px,92vh)] gf:max-h-[92vh] gf:w-[min(calc(52rem+100px),94vw)]"
+        >
+          <div className="gf:space-y-4">
+            <div
+              className="gf:inline-flex gf:flex-wrap gf:gap-1 gf:rounded-[0.55rem] gf:border gf:border-[var(--color-gf-border)] gf:bg-[var(--color-gf-bg)] gf:p-1"
+              role="tablist"
+              aria-label="Admin sections"
+            >
               {(['flags', 'users', 'groups', 'audit'] as Tab[]).map((item) => (
                 <Button
                   key={item}
                   role="tab"
                   aria-selected={tab === item}
-                  variant={tab === item ? 'default' : 'secondary'}
+                  variant={tab === item ? 'default' : 'ghost'}
+                  className={
+                    tab === item
+                      ? undefined
+                      : 'gf:border-transparent gf:text-[var(--color-gf-fg)] gf:hover:bg-[var(--color-gf-surface)]'
+                  }
                   onClick={() => selectTab(item)}
                 >
                   {item[0]!.toUpperCase() + item.slice(1)}
@@ -219,7 +240,7 @@ export function AdminModal({
                 mode="edit"
                 initial={userDetail}
                 flags={flags}
-                selfEmail={permissions.email}
+                selfEmail={permissions?.email}
                 onBack={() => setView({ kind: 'list' })}
                 onSaved={() => {
                   setView({ kind: 'list' });
@@ -264,12 +285,19 @@ export function AdminModal({
             {tab === 'audit' ? (
               <AuditList
                 items={audit}
+                accessClients={auditAccessClients}
+                accessClientFilter={auditAccessClient}
+                onAccessClientFilterChange={(value) => {
+                  setAuditAccessClient(value);
+                  void loadAudit(value);
+                }}
                 hasMore={Boolean(auditCursor)}
                 onLoadMore={() => {
                   void (async () => {
                     const page = await client.listAudit(await authHeaders(), {
                       limit: 50,
                       cursor: auditCursor ?? undefined,
+                      accessClient: auditAccessClient || undefined,
                     });
                     setAudit((prev) => [...prev, ...page.items]);
                     setAuditCursor(page.nextCursor);

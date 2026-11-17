@@ -39,6 +39,7 @@ if (!endpoint) {
       groupGrants: [],
       userGrants: [],
       developerDenies: [],
+      audit: [],
     });
     return repo;
   });

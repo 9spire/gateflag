@@ -10,7 +10,11 @@ export function loadSnapshot(seedVersion: number): SeedSnapshot | null {
     if (!raw) {
       return null;
     }
-    return JSON.parse(raw) as SeedSnapshot;
+    const parsed = JSON.parse(raw) as SeedSnapshot;
+    return {
+      ...parsed,
+      audit: parsed.audit ?? [],
+    };
   } catch {
     return null;
   }

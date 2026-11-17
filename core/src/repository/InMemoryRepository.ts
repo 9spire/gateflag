@@ -368,14 +368,28 @@ export class InMemoryRepository implements Repository {
     this.audit.push(clone(entry));
   }
 
-  async listAudit(options: { limit: number; cursor?: string }): Promise<AuditPage> {
-    const sorted = [...this.audit].sort((a, b) => {
-      const byAt = b.at.localeCompare(a.at);
-      if (byAt !== 0) {
-        return byAt;
-      }
-      return b.id.localeCompare(a.id);
-    });
+  async listAudit(options: {
+    limit: number;
+    cursor?: string;
+    accessClient?: string;
+  }): Promise<AuditPage> {
+    const sorted = [...this.audit]
+      .filter((entry) => {
+        if (!options.accessClient) {
+          return true;
+        }
+        if (entry.accessClients.length === 0) {
+          return true;
+        }
+        return entry.accessClients.includes(options.accessClient);
+      })
+      .sort((a, b) => {
+        const byAt = b.at.localeCompare(a.at);
+        if (byAt !== 0) {
+          return byAt;
+        }
+        return b.id.localeCompare(a.id);
+      });
     let start = 0;
     if (options.cursor) {
       const index = sorted.findIndex((entry) => `${entry.at}#${entry.id}` === options.cursor);
@@ -426,6 +440,7 @@ export class InMemoryRepository implements Repository {
     for (const deny of seed.developerDenies) {
       this.developerDenies.set(this.denyKey(deny.email, deny.flagKey), clone(deny));
     }
+    this.audit = (seed.audit ?? []).map(clone);
   }
 
   exportSnapshot(seedVersion: number): SeedSnapshot {
@@ -439,6 +454,7 @@ export class InMemoryRepository implements Repository {
       groupGrants: [...this.groupGrants.values()].map(clone),
       userGrants: [...this.userGrants.values()].map(clone),
       developerDenies: [...this.developerDenies.values()].map(clone),
+      audit: this.audit.map(clone),
     };
   }
 }

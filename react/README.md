@@ -11,6 +11,8 @@ import 'gateflag/styles.css';
 </AccessControlProvider>
 ```
 
+Form controls use [`@tailwindcss/forms`](https://github.com/tailwindlabs/tailwindcss-forms) with **class strategy** only (`form-input`, `form-select`, `form-checkbox`). Those rules are opt-in class selectors — importing `gateflag/styles.css` does **not** restyle a host app’s bare `<input>` / `<select>` / checkbox elements.
+
 Peer dependency: `react` / `react-dom` ^18 or ^19.
 
 Docs and live demo: [https://9spire.github.io/gateflag/](https://9spire.github.io/gateflag/)

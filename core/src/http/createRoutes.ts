@@ -439,9 +439,11 @@ export function createRoutes(deps: CreateRoutesDeps): RouteDef[] {
       auth: 'admin',
       handler: withDeps('admin', async (req, ctx) => {
         const limit = Number(req.query.limit ?? '50');
+        const accessClient = req.query.accessClient?.trim() || undefined;
         const page = await ctx.repo.listAudit({
           limit: Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : 50,
           cursor: req.query.cursor || undefined,
+          accessClient,
         });
         return { status: 200, body: page };
       }),

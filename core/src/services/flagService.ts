@@ -73,6 +73,7 @@ export async function createFlag(options: {
     summary: `Created flag (${flag.universalState})`,
     now: options.now,
     id: createAuditId(options.now, flag.key),
+    accessClients: flag.accessClients,
   });
 
   return flag;
@@ -132,6 +133,7 @@ export async function updateFlag(options: {
     summary: summaryParts.join('; ') || 'Updated flag',
     now: options.now,
     id: createAuditId(options.now, `${options.key}-update`),
+    accessClients: updated.accessClients,
   });
 
   return updated;
@@ -143,6 +145,7 @@ export async function deleteFlag(options: {
   now: Date;
   key: string;
 }): Promise<void> {
+  const existing = await options.repo.getFlag(options.key);
   await options.repo.deleteFlagCascade(options.key);
   await writeAudit(options.repo, {
     actorEmail: options.actor.email,
@@ -152,6 +155,7 @@ export async function deleteFlag(options: {
     summary: 'Deleted flag',
     now: options.now,
     id: createAuditId(options.now, `${options.key}-delete`),
+    accessClients: existing?.accessClients ?? [],
   });
 }
 
@@ -171,7 +175,8 @@ export async function setFlagRoleAccess(options: {
     'Invalid role-access payload',
   );
 
-  if (!(await options.repo.getFlag(options.key))) {
+  const flag = await options.repo.getFlag(options.key);
+  if (!flag) {
     throw new NotFoundError('flag', options.key);
   }
 
@@ -188,6 +193,7 @@ export async function setFlagRoleAccess(options: {
     summary: body.hasAccess ? 'Granted access role' : 'Revoked access role',
     now: options.now,
     id: createAuditId(options.now, `${options.key}-role`),
+    accessClients: flag.accessClients,
   });
 }
 
@@ -208,7 +214,8 @@ export async function setFlagGroupAccess(options: {
     'Invalid group-access payload',
   );
 
-  if (!(await options.repo.getFlag(options.key))) {
+  const flag = await options.repo.getFlag(options.key);
+  if (!flag) {
     throw new NotFoundError('flag', options.key);
   }
   if (!(await options.repo.getGroup(body.groupKey))) {
@@ -235,6 +242,7 @@ export async function setFlagGroupAccess(options: {
       : `Revoked group ${body.groupKey}`,
     now: options.now,
     id: createAuditId(options.now, `${options.key}-group-${body.groupKey}`),
+    accessClients: flag.accessClients,
   });
 }
 
@@ -255,7 +263,8 @@ export async function setFlagUserAccess(options: {
     'Invalid user-access payload',
   );
 
-  if (!(await options.repo.getFlag(options.key))) {
+  const flag = await options.repo.getFlag(options.key);
+  if (!flag) {
     throw new NotFoundError('flag', options.key);
   }
 
@@ -299,5 +308,6 @@ export async function setFlagUserAccess(options: {
       : `Revoked user ${body.email}`,
     now: options.now,
     id: createAuditId(options.now, `${options.key}-user-${body.email}`),
+    accessClients: flag.accessClients,
   });
 }

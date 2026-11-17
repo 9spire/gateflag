@@ -1,21 +1,63 @@
-@import "tailwindcss" prefix(gf);
+@import 'tailwindcss' prefix(gf);
 
-@theme {
-  --color-gf-bg: oklch(0.99 0.01 145);
-  --color-gf-fg: oklch(0.25 0.02 145);
-  --color-gf-muted: oklch(0.45 0.02 145);
-  --color-gf-border: oklch(0.88 0.02 145);
-  --color-gf-accent: oklch(0.45 0.08 145);
-  --color-gf-danger: oklch(0.55 0.18 25);
-  --color-gf-surface: oklch(1 0 0);
+/* Shared border token: inputs, selects, checkboxes, and secondary (outlined) buttons. */
+:root {
+  color-scheme: light;
+  --color-gf-bg: #f3f6f9;
+  --color-gf-fg: #15202b;
+  --color-gf-muted: #5b6b7c;
+  --color-gf-border: #d7dee7;
+  --color-gf-accent: #0f6e56;
+  --color-gf-accent-soft: #d8f3ea;
+  --color-gf-danger: #9b1c1c;
+  --color-gf-danger-bg: #fde8e8;
+  --color-gf-surface: #ffffff;
+  --color-gf-warn: #8a4b08;
+  --color-gf-warn-bg: #fff1d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-gf-bg: #10161d;
+    --color-gf-fg: #e8eef4;
+    --color-gf-muted: #93a4b5;
+    --color-gf-border: #2f3b48;
+    --color-gf-accent: #3d9b7a;
+    --color-gf-accent-soft: #16352c;
+    --color-gf-danger: #f0a0a0;
+    --color-gf-danger-bg: #3a1a1a;
+    --color-gf-surface: #18212b;
+    --color-gf-warn: #e6c07b;
+    --color-gf-warn-bg: #3a2e16;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-gf-bg: #10161d;
+  --color-gf-fg: #e8eef4;
+  --color-gf-muted: #93a4b5;
+  --color-gf-border: #2f3b48;
+  --color-gf-accent: #3d9b7a;
+  --color-gf-accent-soft: #16352c;
+  --color-gf-danger: #f0a0a0;
+  --color-gf-danger-bg: #3a1a1a;
+  --color-gf-surface: #18212b;
+  --color-gf-warn: #e6c07b;
+  --color-gf-warn-bg: #3a2e16;
 }
 
 .gf-gateflag-root {
   color: var(--color-gf-fg);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    sans-serif;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
 }
+
+.gf-gateflag-root button:focus-visible,
+.gf-gateflag-root input:focus-visible,
+.gf-gateflag-root select:focus-visible {
+  outline: 2px solid var(--color-gf-accent);
+  outline-offset: 2px;
+}
+
+/* Select caret sizing lives in scripts/merge-form-classes.mjs so it wins over form-select. */

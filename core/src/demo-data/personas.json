@@ -6,7 +6,21 @@
       "displayName": "Alex",
       "email": "alex@example.com",
       "idpGroups": ["gateflag-admins"],
-      "blurb": "Admin and developer. Can open the admin console."
+      "blurb": "Admin and developer. Can open the Gateflag console."
+    },
+    {
+      "id": "riley-admin",
+      "displayName": "Riley",
+      "email": "riley@example.com",
+      "idpGroups": ["gateflag-admins"],
+      "blurb": "Admin and developer. Same console access as other admins."
+    },
+    {
+      "id": "casey-admin",
+      "displayName": "Casey",
+      "email": "casey@example.com",
+      "idpGroups": ["gateflag-admins"],
+      "blurb": "Admin only — no developer auto-grants. Can still open the console."
     },
     {
       "id": "dana-dev",
