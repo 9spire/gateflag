@@ -19,11 +19,12 @@ Docs and live demo: [https://9spire.github.io/gateflag/](https://9spire.github.i
 
 ## Releasing
 
-Publishing is driven by git tags via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml).
+Publishing is driven by git tags via [`.github/workflows/publish.yml`](../.github/workflows/publish.yml). CI **stages** the package (works with a non–bypass-2FA token); you approve with 2FA so it goes live.
 
 1. Bump `"version"` in `react/package.json` (e.g. `0.1.0` → `0.1.1`).
 2. Commit the change on `main`.
 3. Tag and push: `git tag v0.1.1 && git push origin v0.1.1` (tag must match the package version).
-4. The Publish workflow builds and runs `npm publish` for `gateflag`.
+4. Wait for the Publish workflow to stage the package.
+5. Approve with 2FA: [Staged packages](https://www.npmjs.com/settings/~/staged-packages) (or `npm stage list` / `npm stage approve <id>` after `npm login`).
 
-Requires the repo secret `NPM_TOKEN` (npm automation or granular publish token).
+Requires the repo secret `NPM_TOKEN` (granular publish token; bypass-2FA not required).

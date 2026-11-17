@@ -28,7 +28,12 @@ jobs:
             exit 1
           fi
       - run: npm run build -w @gateflag/core && npm run build -w gateflag
-      - name: Publish gateflag
-        run: npm publish -w gateflag --access public
+      - name: Stage gateflag for npm
+        run: npm stage publish -w gateflag --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Next step
+        run: |
+          echo "Staged gateflag@${GITHUB_REF_NAME#v}."
+          echo "Approve with 2FA: https://www.npmjs.com/settings/~/staged-packages"
+          echo "Or: npm stage list && npm stage approve <stage-id>"
