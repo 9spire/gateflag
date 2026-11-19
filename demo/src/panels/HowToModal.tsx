@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { INTEGRATION_SNIPPET } from '../data/snippet.js';
+import { INTEGRATION_SNIPPET, THEME_SNIPPET } from '../data/snippet.js';
 import { CopyButton } from './CopyButton.js';
 
 const STEPS = [
@@ -16,7 +16,11 @@ const STEPS = [
     body: 'Render AccessButton anywhere under the provider. By default it only appears for admins. This demo keeps Admin in the header for every View as (alwaysShow + getAdminAuthHeaders).',
   },
   {
-    title: '4. Stay in sync',
+    title: '4. Match your product colors',
+    body: 'Import gateflag/styles.css, then override the seven --gateflag-* brand tokens (bg, surface, fg, muted, border, accent, on-accent). That swaps the demo green for your highlight color. For dark mode, set the same tokens under :root[data-theme="dark"] and toggle document.documentElement.dataset.theme.',
+  },
+  {
+    title: '5. Stay in sync',
     body: 'Permissions refresh when the user or app changes, when the window regains focus, after the admin modal closes, and on a short poll. You can also call refresh() yourself after a known change.',
   },
 ] as const;
@@ -86,9 +90,19 @@ export function HowToModal({ open, onClose }: { open: boolean; onClose: () => vo
           </pre>
         </div>
 
+        <div className="demo-howto-snippet">
+          <div className="demo-panel-head">
+            <h3>Theme tokens</h3>
+            <CopyButton text={THEME_SNIPPET} />
+          </div>
+          <pre className="demo-code" tabIndex={0} aria-label="Theme CSS snippet">
+            <code>{THEME_SNIPPET}</code>
+          </pre>
+        </div>
+
         <p className="demo-howto-footnote">
-          Import <code>gateflag/styles.css</code> once if you use the admin modal. Peer dependency:
-          React 18 or 19.
+          Import <code>gateflag/styles.css</code> once if you use the admin modal, then override{' '}
+          <code>--gateflag-*</code> to match your brand. Peer dependency: React 18 or 19.
         </p>
       </div>
     </div>

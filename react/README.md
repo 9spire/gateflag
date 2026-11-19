@@ -13,6 +13,49 @@ import 'gateflag/styles.css';
 
 Form controls use [`@tailwindcss/forms`](https://github.com/tailwindlabs/tailwindcss-forms) with **class strategy** only (`form-input`, `form-select`, `form-checkbox`). Those rules are opt-in class selectors — importing `gateflag/styles.css` does **not** restyle a host app’s bare `<input>` / `<select>` / checkbox elements.
 
+## Theming
+
+The admin UI is driven by CSS variables. Override **`--gateflag-*`** on `:root` to match your product (demo green is only the default).
+
+**7 brand tokens** (set these first):
+
+| Token | Role |
+| --- | --- |
+| `--gateflag-bg` | Inset / secondary background |
+| `--gateflag-surface` | Modal, panels, inputs |
+| `--gateflag-fg` | Primary text |
+| `--gateflag-muted` | Secondary text |
+| `--gateflag-border` | Borders and dividers |
+| `--gateflag-accent` | Primary buttons, active tabs, focus |
+| `--gateflag-on-accent` | Text on accent fills |
+
+Optional: `--gateflag-accent-soft`, `--gateflag-danger`, `--gateflag-danger-bg`, `--gateflag-on-danger`, `--gateflag-warn`, `--gateflag-warn-bg`.
+
+```css
+/* After import 'gateflag/styles.css' — map to your brand */
+:root {
+  --gateflag-accent: #c45c26;
+  --gateflag-on-accent: #ffffff;
+  --gateflag-surface: #faf6f1;
+  --gateflag-bg: #f3ebe3;
+  --gateflag-fg: #2a1810;
+  --gateflag-muted: #6b5348;
+  --gateflag-border: #e0d2c6;
+}
+
+:root[data-theme='dark'] {
+  --gateflag-accent: #e07a45;
+  --gateflag-on-accent: #1a100c;
+  --gateflag-surface: #241812;
+  --gateflag-bg: #1a120e;
+  --gateflag-fg: #f3ebe3;
+  --gateflag-muted: #b89a8c;
+  --gateflag-border: #3d2c24;
+}
+```
+
+**Dark mode:** set `document.documentElement.dataset.theme` to `'light'` or `'dark'` (the demo does this). If `data-theme` is unset, Gateflag follows `prefers-color-scheme`. When you support dark mode, redefine the same `--gateflag-*` tokens under `:root[data-theme='dark']` (and optionally under `prefers-color-scheme: dark`).
+
 Peer dependency: `react` / `react-dom` ^18 or ^19.
 
 Docs and live demo: [https://9spire.github.io/gateflag/](https://9spire.github.io/gateflag/)

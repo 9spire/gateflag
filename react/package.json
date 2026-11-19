@@ -1,6 +1,6 @@
 {
   "name": "gateflag",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "React feature-flag and access-control components for Gateflag",
   "license": "MIT",
   "author": "Rebecca Dittmar",

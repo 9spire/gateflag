@@ -18,11 +18,11 @@ export function Button({
         size === 'md' && 'gf:px-[0.85rem] gf:py-2',
         size === 'sm' && 'gf:px-[0.55rem] gf:py-1 gf:text-[0.8rem]',
         variant === 'default' &&
-          'gf:border-[var(--color-gf-accent)] gf:bg-[var(--color-gf-accent)] gf:text-white',
+          'gf:border-[var(--color-gf-accent)] gf:bg-[var(--color-gf-accent)] gf:text-[var(--color-gf-on-accent)]',
         variant === 'secondary' &&
           'gf:border-[var(--color-gf-border)] gf:bg-[var(--color-gf-surface)] gf:text-[var(--color-gf-fg)]',
         variant === 'danger' &&
-          'gf:border-[var(--color-gf-danger)] gf:bg-[var(--color-gf-danger)] gf:text-white',
+          'gf:border-[var(--color-gf-danger)] gf:bg-[var(--color-gf-danger)] gf:text-[var(--color-gf-on-danger)]',
         variant === 'ghost' &&
           'gf:border-[var(--color-gf-border)] gf:bg-transparent gf:text-[var(--color-gf-accent)] gf:hover:bg-[var(--color-gf-bg)]',
         className,
