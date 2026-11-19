@@ -96,15 +96,15 @@ export function AdminModal({
         limit: 50,
         accessClient: accessClient || undefined,
       });
-      setAudit(page.items);
-      setAuditCursor(page.nextCursor);
+      setAudit(page.items ?? []);
+      setAuditCursor(page.nextCursor ?? null);
     } catch (error) {
       toastError(error instanceof Error ? error.message : 'Failed to load audit');
     }
   }
 
   const auditAccessClients = [
-    ...new Set(flags.flatMap((flag) => flag.accessClients)),
+    ...new Set(flags.flatMap((flag) => flag.accessClients ?? [])),
   ].sort((a, b) => a.localeCompare(b));
 
   async function openFlag(key: string) {
@@ -299,8 +299,8 @@ export function AdminModal({
                       cursor: auditCursor ?? undefined,
                       accessClient: auditAccessClient || undefined,
                     });
-                    setAudit((prev) => [...prev, ...page.items]);
-                    setAuditCursor(page.nextCursor);
+                    setAudit((prev) => [...prev, ...(page.items ?? [])]);
+                    setAuditCursor(page.nextCursor ?? null);
                   })();
                 }}
               />
